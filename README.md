@@ -5,7 +5,7 @@ A real-time fraud detection pipeline built with **Dropwizard**, **Aerospike**, *
 ## Screenshots
 
 ![Dashboard](screenshots/dashboard.png)
-*(Note: You can replace `screenshots/dashboard.png` with actual screenshots of your running application).*
+
 
 ## Architecture
 
