@@ -10,14 +10,16 @@ A real-time fraud detection pipeline built with **Dropwizard**, **Aerospike**, *
 ## Architecture
 
 ```
-POST /api/ingest → FraudRulesEngine → RabbitMQ Fanout Exchange
-                                            │
-                        ┌───────────────────┼───────────────────┐
-                        ▼                   ▼                   ▼
-                  search.queue      dashboard.stream.queue   alerts.queue
-                        │                   │                   │
-                   Elasticsearch        WebSocket           Console Alerts
-                   (Audit Trail)        (Live Feed)         (BLOCKED only)
+POST /api/ingest → FraudRulesEngine → ML Scoring Service → RabbitMQ Fanout Exchange
+                                                                │
+                            ┌───────────────────┬───────────────┼───────────────────┐
+                            ▼                   ▼               ▼                   ▼
+                      search.queue      dashboard.stream    alerts.queue     notifications.queue
+                            │                   │               │                   │
+                       Elasticsearch        WebSocket       Console Alerts   Alerting Service (Email/SMS)
+                       (Audit Trail)        (Live Feed)     (BLOCKED only)          │
+                                                                                    ▼
+                                                                           Alerting Frontend
 ```
 
 ## Tech Stack
@@ -26,9 +28,11 @@ POST /api/ingest → FraudRulesEngine → RabbitMQ Fanout Exchange
 |-----------|-----------|---------|
 | API Server | Dropwizard 4 | REST API + lifecycle management |
 | State Store | Aerospike | User profiles, trust scores, velocity tracking |
-| Message Broker | RabbitMQ | Fanout exchange decoupling 3 consumers |
+| Message Broker | RabbitMQ | Fanout exchange decoupling 4 consumers |
 | Search/Analytics | Elasticsearch 8 | Audit trail, stats aggregation |
-| Frontend | React + Recharts | Real-time dashboard |
+| ML Scoring | Python (FastAPI/Scikit) | AI-powered anomaly detection |
+| Alerting Service | Dropwizard 4 | Notification delivery and proxy |
+| Dashboards | React + Recharts | Real-time monitoring & user portals |
 
 ## Quick Start
 
@@ -36,13 +40,29 @@ POST /api/ingest → FraudRulesEngine → RabbitMQ Fanout Exchange
 # 1. Start infrastructure
 docker-compose up -d
 
-# 2. Build & run backend
+# 2. Start ML Scoring Service
+cd ml-scoring-service
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+uvicorn main:app --reload
+
+# 3. Build & run core backend
 cd backend
 mvn clean package
 java -jar target/shieldgate-backend-1.0-SNAPSHOT.jar server config.yml
 
-# 3. Start frontend
+# 4. Build & run alerting service
+cd alerting-service
+mvn clean package
+java -jar target/alerting-service-1.0-SNAPSHOT.jar server config.yml
+
+# 5. Start frontends (Dashboard & Alerting)
+# Terminal 1:
 cd frontend
+npm install && npm run dev
+# Terminal 2:
+cd alerting-frontend
 npm install && npm run dev
 ```
 
