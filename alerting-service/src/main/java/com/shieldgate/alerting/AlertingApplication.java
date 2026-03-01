@@ -77,7 +77,7 @@ public class AlertingApplication extends Application<AlertingConfiguration> {
 
         // ── JAX-RS Resources ──
         env.jersey().register(new UserResource(userDAO));
-        env.jersey().register(new NotificationResource(notificationDAO));
+        env.jersey().register(new NotificationResource(notificationDAO, userDAO));
         env.jersey().register(new TransactionProxyResource(config.getShieldgateBackendUrl()));
 
         log.info("ShieldGate Alerting Service started — listening on port 8090");

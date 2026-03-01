@@ -14,9 +14,11 @@ import java.util.Map;
 public class NotificationResource {
 
     private final NotificationDAO notificationDAO;
+    private final com.shieldgate.alerting.db.UserDAO userDAO;
 
-    public NotificationResource(NotificationDAO notificationDAO) {
+    public NotificationResource(NotificationDAO notificationDAO, com.shieldgate.alerting.db.UserDAO userDAO) {
         this.notificationDAO = notificationDAO;
+        this.userDAO = userDAO;
     }
 
     /**
@@ -24,11 +26,16 @@ public class NotificationResource {
      */
     @GET
     @Path("/user/{userId}")
-    public Response getUserNotifications(@PathParam("userId") long userId) {
-        List<Notification> notifications = notificationDAO.findByUserId(userId);
-        return Response.ok(Map.of(
-                "notifications", notifications,
-                "total", notifications.size())).build();
+    public Response getUserNotifications(@PathParam("userId") String externalId) {
+        return userDAO.findByUserId(externalId)
+                .map(user -> {
+                    List<Notification> notifications = notificationDAO.findByUserId(user.getId());
+                    return Response.ok(Map.of(
+                            "notifications", notifications,
+                            "total", notifications.size())).build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "User not found")).build());
     }
 
     /**
@@ -48,8 +55,13 @@ public class NotificationResource {
      */
     @GET
     @Path("/count/{userId}")
-    public Response getCount(@PathParam("userId") long userId) {
-        long count = notificationDAO.countByUserId(userId);
-        return Response.ok(Map.of("userId", userId, "count", count)).build();
+    public Response getCount(@PathParam("userId") String externalId) {
+        return userDAO.findByUserId(externalId)
+                .map(user -> {
+                    long count = notificationDAO.countByUserId(user.getId());
+                    return Response.ok(Map.of("userId", externalId, "count", count)).build();
+                })
+                .orElse(Response.status(Response.Status.NOT_FOUND)
+                        .entity(Map.of("error", "User not found")).build());
     }
 }
