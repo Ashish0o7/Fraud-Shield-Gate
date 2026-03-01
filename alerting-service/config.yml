@@ -1,0 +1,26 @@
+server:
+  applicationConnectors:
+    - type: http
+      port: 8090
+  adminConnectors:
+    - type: http
+      port: 8091
+
+# PostgreSQL database
+database:
+  driverClass: org.postgresql.Driver
+  url: jdbc:postgresql://localhost:5433/shieldgate_alerting
+  user: shieldgate
+  password: shieldgate123
+  maxWaitForConnection: 1s
+  validationQuery: "SELECT 1"
+  minSize: 2
+  initialSize: 2
+  maxSize: 8
+
+# RabbitMQ
+rabbitHost: "localhost"
+rabbitPort: 5672
+
+# Main ShieldGate backend URL (for proxying transactions)
+shieldgateBackendUrl: "http://localhost:8080"

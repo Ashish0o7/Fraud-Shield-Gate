@@ -1,0 +1,12 @@
+DOCUMENTATION.md
+.env
+node_modules/
+target/
+venv/
+.idea/
+.vscode/
+.DS_Store
+*.pyc
+__pycache__/
+*.log
+.gemini/
