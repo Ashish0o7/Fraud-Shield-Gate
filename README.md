@@ -9,9 +9,7 @@ A real-time fraud detection pipeline built with **Dropwizard**, **Aerospike**, *
 
 **PayShield Secure Portal**
 ![PayShield](screenshots/payshield.png)
-*(Note: You can replace `screenshots/dashboard.png` and `screenshots/payshield.png` with actual screenshots of your running application).*
 
-## 1. System Overview
 
 ShieldGate is a **real-time fraud detection pipeline** that evaluates financial transactions against a multi-rule scoring engine, stores user behavioral state in a high-speed NoSQL database, and fans out results to four independent downstream consumers via a message broker.
 
