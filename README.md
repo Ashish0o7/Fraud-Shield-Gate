@@ -93,8 +93,8 @@ client.operate(null, key,
 ```
 
 **Why atomic?** If two requests for the same user arrive simultaneously:
-- ❌ Without atomicity: both read `txCount=3`, both write `txCount=4` (lost update)
-- ✅ With `Operation.add()`: Aerospike increments on-server → `txCount=5` correctly
+- Without atomicity: both read `txCount=3`, both write `txCount=4` (lost update)
+- With `Operation.add()`: Aerospike increments on-server → `txCount=5` correctly
 
 Trust score also updates dynamically:
 - BLOCKED → trust drops by 15
