@@ -1,0 +1,18 @@
+aerospikeHost: "localhost"
+aerospikePort: 3000
+aerospikeNamespace: "test"
+
+rabbitHost: "localhost"
+rabbitPort: 5672
+
+elasticHost: "localhost"
+elasticPort: 9200
+
+mlServiceUrl: "http://localhost:8000"
+mlTimeoutMillis: 120
+mlBulkheadMaxConcurrent: 50
+rabbitPublishMaxRetries: 3
+redisBackplaneEnabled: true
+redisHost: "localhost"
+redisPort: 6379
+redisChannel: "shieldgate.telemetry"

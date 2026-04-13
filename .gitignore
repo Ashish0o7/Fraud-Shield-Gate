@@ -1,12 +1,68 @@
+# General
+.DS_Store
+.gemini/
 DOCUMENTATION.md
+
+# Secrets / Sensitive
 .env
-node_modules/
-target/
-venv/
+.env.*
+download_stitch.py
+*.pkl
+
+# Logs
+*.log
+logs/
+
+# IDEs
 .idea/
 .vscode/
-.DS_Store
-*.pyc
+*.swp
+
+# Node / JS
+node_modules/
+dist/
+build/
+.npm/
+
+# Java / Maven
+target/
+*.jar
+*.war
+*.ear
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Python
 __pycache__/
-*.log
-.gemini/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+venv/
+ENV/
+env/
+.env

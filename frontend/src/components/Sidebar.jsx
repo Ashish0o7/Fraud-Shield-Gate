@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { API } from '../config/api';
 
 const Sidebar = () => {
   const [showInvestigateModal, setShowInvestigateModal] = useState(false);
@@ -8,7 +9,6 @@ const Sidebar = () => {
   const [investigateResult, setInvestigateResult] = useState(null);
   const [investigateError, setInvestigateError] = useState(null);
   const navigate = useNavigate();
-
   const handleInvestigate = async (e) => {
     e.preventDefault();
     if (!txId.trim()) return;
@@ -16,7 +16,7 @@ const Sidebar = () => {
     setInvestigateResult(null);
     setInvestigateError(null);
     try {
-      const res = await fetch(`http://localhost:8080/api/audit/search?q=${encodeURIComponent(txId.trim())}`);
+      const res = await fetch(`${API.audit}/search?q=${encodeURIComponent(txId.trim())}`);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
       if (!data || data.length === 0) {
@@ -82,14 +82,6 @@ const Sidebar = () => {
           >
             <span className="material-symbols-outlined text-sm">add</span> New Investigation
           </button>
-          <a href="#" className="flex items-center gap-3 px-4 py-2 text-tertiary hover:text-on-surface transition-all duration-300">
-            <span className="material-symbols-outlined text-lg">help_outline</span>
-            <span>Help</span>
-          </a>
-          <a href="#" className="flex items-center gap-3 px-4 py-2 text-tertiary hover:text-on-surface transition-all duration-300">
-            <span className="material-symbols-outlined text-lg">logout</span>
-            <span>Logout</span>
-          </a>
         </div>
       </aside>
 

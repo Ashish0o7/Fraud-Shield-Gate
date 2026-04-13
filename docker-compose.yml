@@ -7,12 +7,35 @@ services:
       - "3000:3000"
     volumes:
       - aerospike-data:/opt/aerospike/data
+    healthcheck:
+      test: [ "CMD", "asinfo", "-v", "status" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
 
   rabbitmq:
     image: rabbitmq:3-management
+    environment:
+      # Allow guest user from other containers
+      RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-rabbitmq_broker loopback_users [none]"
     ports:
       - "5672:5672"
       - "15672:15672"
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "check_running" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.12.0
@@ -22,6 +45,11 @@ services:
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "9200:9200"
+    healthcheck:
+      test: [ "CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1" ]
+      interval: 15s
+      timeout: 10s
+      retries: 5
 
   postgres:
     image: postgres:16
@@ -33,6 +61,88 @@ services:
       - "5433:5432"
     volumes:
       - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U shieldgate -d shieldgate_alerting" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    restart: unless-stopped
+
+  ml-scoring-service:
+    build:
+      context: ./ml-scoring-service
+    ports:
+      - "8000:8000"
+    healthcheck:
+      # Using python as curl might not be in the slim image
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  fraud-detection-service:
+    build:
+      context: ./fraud-detection-service
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+      aerospike:
+        condition: service_healthy
+      ml-scoring-service:
+        condition: service_healthy
+    restart: unless-stopped
+
+  communications-service:
+    build:
+      context: ./communications-service
+    ports:
+      - "8090:8090"
+      - "8091:8091"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      fraud-detection-service:
+        condition: service_started
+    restart: unless-stopped
+
+  api-gateway:
+    image: nginx:alpine
+    ports:
+      - "8088:8088"
+    volumes:
+      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      fraud-detection-service:
+        condition: service_started
+      communications-service:
+        condition: service_started
+      ml-scoring-service:
+        condition: service_started
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "3001:80"
+    depends_on:
+      - api-gateway
 
 volumes:
   aerospike-data:

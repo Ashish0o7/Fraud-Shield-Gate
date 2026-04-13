@@ -1,5 +1,7 @@
 # ShieldGate — Event-Driven Fraud Detection System
 
+For an interview-ready walkthrough with seeded demo data and SMTP delivery setup, see `INTERVIEW_RUNBOOK.md`.
+
 A real-time fraud detection pipeline built with **Dropwizard**, **Aerospike**, **RabbitMQ**, **Elasticsearch**, a **Python ML Scoring Service**, an **Alerting Service**, and a **React** dashboard.
 
 ## Screenshots
@@ -79,9 +81,9 @@ Score → Decision mapping:
 
 Result: `EvaluatedEvent { status: "FLAGGED", riskScore: 45, riskReason: "High Velocity; Elevated Risk Merchant (CRYPTO)" }`
 
-### Step 4: ML Scoring Service (Optional AI Layer)
+### Step 4: ML Scoring Service (Java Dropwizard Layer)
 
-The application hits a separate Python FastAPI service for AI-assisted scoring using scikit-learn anomaly detection algorithms if ML features are enabled, acting as another independent scoring dimension integrated back into the unified pipeline.
+The application hits a separate pure-Java Dropwizard microservice for evaluating fraud levels using an algorithmic/heuristic based scoring system mimicking AI predictions setup in our `com.shieldgate.ml` package.
 
 ### Step 5: State Update → `AerospikeService.updateUserStateAtomically()`
 
@@ -147,12 +149,12 @@ The `RabbitMQConsumer` (Dropwizard `Managed` lifecycle) consumes from 4 queues:
 
 | Component | Technology | Purpose |
 |-----------|-----------|---------|
-| API Server | Dropwizard 4 | REST API + lifecycle management |
+| API Server | Dropwizard 4 | REST API + lifecycle management (Fraud Detection) |
 | State Store | Aerospike | User profiles, trust scores, velocity tracking |
 | Message Broker | RabbitMQ | Fanout exchange decoupling 4 consumers |
 | Search/Analytics | Elasticsearch 8 | Audit trail, stats aggregation |
-| ML Scoring | Python (FastAPI/Scikit) | AI-powered anomaly detection |
-| Alerting Service | Dropwizard 4 | Notification delivery and proxy |
+| ML Scoring | Dropwizard 4 (Java) | Algorithmic heuristic simulation |
+| Alerting Service | Dropwizard 4 | Notification delivery and proxy (Communications) |
 | Dashboards | React + Recharts | Real-time monitoring & user portals |
 
 ---
@@ -165,20 +167,18 @@ docker-compose up -d
 
 # 2. Start ML Scoring Service
 cd ml-scoring-service
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-uvicorn main:app --reload
-
-# 3. Build & run core backend
-cd backend
 mvn clean package
-java -jar target/shieldgate-backend-1.0-SNAPSHOT.jar server config.yml
+java -jar target/ml-scoring-service-1.0-SNAPSHOT.jar server config.yml
 
-# 4. Build & run alerting service
-cd alerting-service
+# 3. Build & run core backend (Fraud Detection Service)
+cd fraud-detection-service
 mvn clean package
-java -jar target/alerting-service-1.0-SNAPSHOT.jar server config.yml
+java -jar target/fraud-detection-service-1.0-SNAPSHOT.jar server config.yml
+
+# 4. Build & run alerting service (Communications Service)
+cd communications-service
+mvn clean package
+java -jar target/communications-service-1.0-SNAPSHOT.jar server config.yml
 
 # 5. Start frontends (Dashboard & Alerting)
 # Terminal 1:
