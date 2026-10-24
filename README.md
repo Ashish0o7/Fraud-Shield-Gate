@@ -219,9 +219,7 @@ mvn test
 
 ---
 
-## 7. Key Engineering Decisions (Interview Talking Points)
-
-| Topic | Decision | Why |
+| Decision | Why |
 |-------|----------|-----|
 | **Fanout vs. Topic exchange** | Fanout | Every consumer needs every event. Fanout is simpler and faster than topic routing |
 | **Aerospike vs. Redis** | Aerospike | Built for sub-ms reads at scale with persistence. Redis would work but Aerospike shows breadth |
