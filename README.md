@@ -26,7 +26,6 @@ POST /api/ingest → FraudRulesEngine → ML Scoring Service → RabbitMQ Fanout
                                                                                     ▼
                                                                            Alerting Frontend
 ```
-
 ---
 
 ## 2. Request Lifecycle — What Happens When a Transaction Arrives
